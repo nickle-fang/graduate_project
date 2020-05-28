@@ -5,7 +5,7 @@ import serial
 class Revlaser:
 
     def __init__(self):
-        self.lasercom = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.5)
+        self.lasercom = serial.Serial('/dev/ttyS0', 115200, timeout=0.5)
     
     def readlaser(self):
         # read the serial data
