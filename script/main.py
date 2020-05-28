@@ -4,7 +4,7 @@ import SerialCom as sc
 
 
 class Cmdsend:
-    x_cmd = 0
+    x_cmd = 10
     y_cmd = 0
     r_cmd = 0
     kickpower_cmd = 0
@@ -13,7 +13,7 @@ class Cmdsend:
     shoot_flag = 0   # shoot:0   chip:1
     drib_flag = 0    # drib:1    stop:0
 
-    state_flag = 0    # angle:0  zheng:1  fan:2
+    state_flag = 1    # angle:0  zheng:1  fan:2
     
     
 def sign(x):
@@ -45,8 +45,6 @@ def pack():
     tx_data[9] = 0
 
 
-
-
 def laser_task():
     global disdata
     mylaser = sc.Revlaser()
@@ -63,9 +61,12 @@ def rev_task():
 
     while True:
         temp = myrev.readh7()
-        if(len(temp) == 5):
-            for i in range(5):
-                rx_data.append(temp[i])
+        # print("hello", temp)
+        if(temp[0] != 0):
+            for i in range(6):
+                rx_data[i] = temp[i]
+        #     print(rx_data)    
+        
         else:
             print("fxxk")
 
@@ -75,8 +76,10 @@ def sendcmd_task():
     mysend = sc.H7com()
 
     while True:
+        pack()
         mysend.sendcmd(tx_data)
         time.sleep(0.016)
+        print("sended", tx_data)
 
 
 def main_task():
@@ -85,7 +88,7 @@ def main_task():
     global tx_data
 
     while True:
-        pack()
+        # pack()
         print("main", disdata)
         print("main", rx_data)
         time.sleep(0.5)
@@ -114,5 +117,5 @@ def main():
 if __name__ == '__main__':
     disdata = 0
     tx_data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-    rx_data = []
+    rx_data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
     main()
