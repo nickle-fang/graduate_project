@@ -1,20 +1,22 @@
 import threading
 import time
 import SerialCom as sc
+import data_define as info
+import position as loc
 
-
-class Cmdsend:
-    x_cmd = 10
-    y_cmd = 0
-    r_cmd = 0
-    kickpower_cmd = 0
-    angle_cmd = 0
-
-    shoot_flag = 0   # shoot:0   chip:1
-    drib_flag = 0    # drib:1    stop:0
-
-    state_flag = 1    # angle:0  zheng:1  fan:2
+def unpack():
+    global rx_data
     
+    info.Datarev.infrared = (rx_data[1] >> 6) & 0x01
+    info.Datarev.chipped = (rx_data[1] >> 4) & 0x01
+    info.Datarev.shooted = (rx_data[1] >> 5) & 0x01
+    info.Datarev.battery = rx_data[2]
+    # info.Datarev.imu_angle = rx_data[3] + (rx_data[4] * 256)
+    # if (info.Datarev.imu_angle > 32767):
+    #     info.Datarev.imu_angle = info.Datarev.imu_angle - 65536
+    # info.Datarev.angle_precise = info.Datarev.imu_angle / 100
+    info.Datarev.robot_num = rx_data[5]
+
     
 def sign(x):
     if (x >= 0):
@@ -27,31 +29,28 @@ def pack():
     global tx_data
 
     tx_data[0] = 0x08
-    tx_data[1] = (Cmdsend.state_flag << 4) | Cmdsend.drib_flag
+    tx_data[1] = (info.Cmdsend.state_flag << 4) | info.Cmdsend.drib_flag
 
-    tx_data[2] = ((abs(Cmdsend.x_cmd) & 0xff00) >> 8) | (sign(Cmdsend.x_cmd) << 7)
-    tx_data[3] = abs(Cmdsend.x_cmd) & 0xff
+    tx_data[2] = ((abs(info.Cmdsend.x_cmd) & 0xff00) >> 8) | (sign(info.Cmdsend.x_cmd) << 7)
+    tx_data[3] = abs(info.Cmdsend.x_cmd) & 0xff
 
-    tx_data[4] = ((abs(Cmdsend.y_cmd) & 0xff00) >> 8) | (sign(Cmdsend.y_cmd) << 7)
-    tx_data[5] = abs(Cmdsend.y_cmd) & 0xff
+    tx_data[4] = ((abs(info.Cmdsend.y_cmd) & 0xff00) >> 8) | (sign(info.Cmdsend.y_cmd) << 7)
+    tx_data[5] = abs(info.Cmdsend.y_cmd) & 0xff
 
-    # TODO:
-    tx_data[6] = 0
-    tx_data[7] = 0
+    tx_data[6] = (int(abs(info.Cmdsend.angle_cmd * 40)) & 0xff00) >> 8
+    tx_data[7] = int(abs(info.Cmdsend.angle_cmd * 40)) & 0xff
 
-    # TODO:
-    tx_data[8] = 0
+    tx_data[8] = info.Cmdsend.kickpower_cmd
 
-    tx_data[9] = 0
+    tx_data[9] = abs(info.Cmdsend.r_cmd) * 40
 
 
 def laser_task():
-    global disdata
     mylaser = sc.Revlaser()
 
     while True:
-        disdata = mylaser.readlaser()
-        # print(disdata)
+        info.Laser.disdata = mylaser.readlaser()
+        # print(info.Laser.disdata)
         # time.sleep(1)
 
 
@@ -62,13 +61,15 @@ def rev_task():
     while True:
         temp = myrev.readh7()
         # print("hello", temp)
-        if(temp[0] != 0):
+        if(temp != 0):
             for i in range(6):
                 rx_data[i] = temp[i]
+            unpack()
         #     print(rx_data)    
         
         else:
-            print("fxxk")
+        #     print("fxxk")
+            pass
 
 
 def sendcmd_task():
@@ -79,19 +80,26 @@ def sendcmd_task():
         pack()
         mysend.sendcmd(tx_data)
         time.sleep(0.016)
-        print("sended", tx_data)
+        # print("sended", tx_data)
 
 
 def main_task():
-    global disdata
     global rx_data
     global tx_data
+    # log_file = open('log.txt', mode='w')
+
+    loc.navigation_mission()
 
     while True:
         # pack()
-        print("main", disdata)
-        print("main", rx_data)
-        time.sleep(0.5)
+        print("main", info.Laser.disdata)
+        # unpack()
+        # log_file.write(str(rx_data))
+        # log_file.write("\n")
+        # print("main rx data", rx_data)
+        print("main angle", info.Datarev.angle_precise)
+        # print("angle raw", info.Datarev.imu_angle)
+        time.sleep(0.1)
 
 
 def main():
@@ -115,7 +123,6 @@ def main():
 
 
 if __name__ == '__main__':
-    disdata = 0
     tx_data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
     rx_data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
     main()
