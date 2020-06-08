@@ -17,15 +17,21 @@ def measure_pos():
     info.Cmdsend.drib_flag = 0
     info.Cmdsend.state_flag = 0
 
-    info.Cmdsend.angle_cmd = math.pi / 2
+    info.Cmdsend.angle_cmd = - math.pi / 2
     # wait until angle is set
-    while(abs(info.Cmdsend.angle_cmd * 180 / math.pi - info.Datarev.angle_precise) > 1):
+    while(abs(-90 - info.Datarev.angle_precise) > 1):
+        # print("angle cmd", info.Cmdsend.angle_cmd)
+        # print("angle precise", info.Datarev.angle_precise)
         pass
+    print("this is the first measure point")
+    time.sleep(1)
     Pos.x = info.Laser.disdata
-    info.Cmdsend.angle_cmd = math.pi
+    info.Cmdsend.angle_cmd = 0
     # wait until angle is set
-    while(abs(info.Cmdsend.angle_cmd * 180 / math.pi - info.Datarev.angle_precise) > 1):
+    while(abs(0 - info.Datarev.angle_precise) > 1):
         pass
+    print("this is the second measure point")
+    time.sleep(1)
     Pos.y = info.Laser.disdata
 
 
@@ -42,18 +48,23 @@ def adjust_orientation(x_set, y_set):
         theta = math.atan(abs(y_set - Pos.y) / abs(x_set - Pos.x))
     else:
         x_set = Pos.x + 0.001
+        theta = math.atan(abs(y_set - Pos.y) / abs(x_set - Pos.x))
 
     if (((y_set - Pos.y) > 0) and ((x_set - Pos.x) > 0)):
         info.Cmdsend.angle_cmd = - theta
     elif (((y_set - Pos.y) > 0) and ((x_set - Pos.x) < 0)):
         info.Cmdsend.angle_cmd = (math.pi / 2 - theta)
     elif (((y_set - Pos.y) < 0) and ((x_set - Pos.x) < 0)):
-        info.Cmdsend.angle_cmd = math.pi + theta
+        info.Cmdsend.angle_cmd = math.pi / 2 + theta
     elif (((y_set - Pos.y) < 0) and ((x_set - Pos.x) > 0)):
         info.Cmdsend.angle_cmd = - (theta + math.pi / 2)
     
     else:
         pass
+    # print("theta", info.Cmdsend.angle_cmd)
+    while(abs(info.Cmdsend.angle_cmd * 180 / math.pi - info.Datarev.angle_precise) > 1):
+        pass
+    print("theta", info.Cmdsend.angle_cmd)
 
 
 def go_to_position(x_set, y_set):
@@ -61,7 +72,7 @@ def go_to_position(x_set, y_set):
 
     length = math.sqrt((x_set - Pos.x)*(x_set - Pos.x) + (y_set - Pos.y)*(y_set-Pos.y))
     max_speed = 0.5
-    near_speed = 0.2
+    near_speed = 0.1
     if (length <= 2.75):
         stay_time = length / near_speed
         info.Cmdsend.x_cmd = near_speed
@@ -100,7 +111,9 @@ def stop():
 def navigation_mission():
     measure_pos()
     print("The position now is", Pos.x, Pos.y)
-    x_set, y_set = input("Please set the destination:")
+    pos_input = eval(input("Please set the destination:"))
+    x_set = pos_input[0]
+    y_set = pos_input[1]
 
     while (math.sqrt((x_set - Pos.x)*(x_set - Pos.x) + (y_set - Pos.y)*(y_set-Pos.y))) > 0.05:
         adjust_orientation(x_set, y_set)
@@ -110,5 +123,6 @@ def navigation_mission():
         time.sleep(1)
 
         measure_pos()
+        print("the position now is", Pos.x, Pos.y)
 
     stop()

@@ -8,7 +8,7 @@ class Cmdsend:
     shoot_flag = 0   # shoot:0   chip:1
     drib_flag = 0    # drib:1    stop:0
 
-    state_flag = 1    # angle:0  zheng:1  fan:2
+    state_flag = 0    # angle:0  zheng:1  fan:2
 
 
 class Datarev:

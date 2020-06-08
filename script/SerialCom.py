@@ -6,7 +6,7 @@ import data_define as info
 class Revlaser:
 
     def __init__(self):
-        self.lasercom = serial.Serial('/dev/ttyS0', 115200, timeout=0.05)
+        self.lasercom = serial.Serial('/dev/ttyS0', 115200, timeout=0.5)
     
     def readlaser(self):
         # read the serial data
@@ -19,10 +19,11 @@ class Revlaser:
             # get the distance data
             distance_raw = laser_data_decode[9:13]
             # print('debug', distance_raw)
-            distance = int(distance_raw, 16) / 1000
+            distance = int(distance_raw, 16) / 1000.0
             # print("task", distance)
             return distance
         except:
+            # print("err")
             return 0
 
 
@@ -49,7 +50,7 @@ class H7com:
             if (angle > 32767):
                 angle = angle - 65536
             # print("angle", angle/100)
-            info.Datarev.angle_precise = angle / 100
+            info.Datarev.angle_precise = angle / 100.0
             return rx_data_raw
         except:
             return 0
