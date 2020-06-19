@@ -2,9 +2,10 @@
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
-from cv2 import cv2
+import cv2
 import numpy as np
 import data_define as info
+import position as posi
 
 
 def rotate_bound(image, angle):
@@ -159,14 +160,15 @@ def detect_ball():
             print("The ball radius is", radius)
             if (put_ball_mid(x, y)):
                 ball_mid_flag = 1
-                # get_ball()
+                get_ball()
             # stop()
         else:
+            # stop()
             search_ball()
             print("Finding the ball......")
 
-        if (ball_mid_flag):
-            get_ball()
+        # if (ball_mid_flag):
+            # get_ball()
 
         # cv2.drawContours(img_rotate, cnts, -1, (0,255,0), 2)
         # cv2.imshow("raw", img_rotate)
@@ -195,13 +197,35 @@ def get_ball():
     info.Cmdsend.kickpower_cmd = 0
     info.Cmdsend.angle_cmd = 0
     info.Cmdsend.shoot_flag = 0
-    info.Cmdsend.drib_flag = 0
+    info.Cmdsend.drib_flag = 1
     info.Cmdsend.state_flag = 1
+
+    while (info.Datarev.infrared != 1):
+        pass
 
     if (info.Datarev.infrared == 1):
          info.Cmdsend.x_cmd = 0
          info.Cmdsend.drib_flag = 1
+         time.sleep(2)
+         shoot()
 
+
+def shoot():
+    posi.adjust_orientation(0.1, 2)
+    time.sleep(2)
+
+
+    info.Cmdsend.x_cmd = 0
+    info.Cmdsend.y_cmd = 0
+    info.Cmdsend.r_cmd = 0
+    info.Cmdsend.kickpower_cmd = 30
+    info.Cmdsend.angle_cmd = 0
+    info.Cmdsend.shoot_flag = 0
+    info.Cmdsend.drib_flag = 1
+    info.Cmdsend.state_flag = 1
+
+    time.sleep(2)
+    info.Cmdsend.kickpower_cmd = 0
 
 def put_ball_mid(x, y):
     x_diff = x - 320
@@ -218,7 +242,7 @@ def put_ball_mid(x, y):
 
     info.Cmdsend.x_cmd = 0
     info.Cmdsend.y_cmd = 0
-    info.Cmdsend.r_cmd = 0.1
+    info.Cmdsend.r_cmd = 0.3
     info.Cmdsend.kickpower_cmd = 0
     info.Cmdsend.angle_cmd = 0
     info.Cmdsend.shoot_flag = 0
@@ -256,8 +280,8 @@ def stop():
 
 
 if __name__ == "__main__":
-    show_image()
-    # detect_ball()
+    # show_image()
+    detect_ball()
 
 # info command send
 #     x_cmd = 0   # 1 cm/s

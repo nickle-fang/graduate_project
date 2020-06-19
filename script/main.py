@@ -29,6 +29,8 @@ def sign(x):
 def pack():
     global tx_data
 
+#     info.Cmdsend.x_cmd = info.Cmdsend.x_cmd * 100
+
     tx_data[0] = 0x08
     tx_data[1] = (info.Cmdsend.state_flag << 4) | info.Cmdsend.drib_flag
 
@@ -99,10 +101,10 @@ def sendcmd_task():
 def main_task():
     global rx_data
     global tx_data
-    log_file = open('log.txt', mode='w')
+#     log_file = open('log.txt', mode='w')
 
 #     loc.navigation_mission()
-#     cam.detect_ball()
+    cam.detect_ball()
 
     while True:
         # info.Cmdsend.angle_cmd = 2.66
@@ -112,11 +114,11 @@ def main_task():
         # log_file.write(str(rx_data))
         # log_file.write("\n")
         # print("main rx data", rx_data)
-        print("main angle", info.Datarev.angle_precise)
-        log_file.write(str(info.Datarev.angle_precise))
-        log_file.write("\n")
+        # print("main angle", info.Datarev.angle_precise)
+        # log_file.write(str(info.Datarev.angle_precise))
+        # log_file.write("\n")
         # print("angle raw", info.Datarev.imu_angle)
-        # print("Success!")
+        print("Success!")
         time.sleep(2)
 
 

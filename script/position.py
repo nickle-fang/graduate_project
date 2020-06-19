@@ -36,12 +36,13 @@ def measure_pos():
 
 
 def adjust_orientation(x_set, y_set):
+    print("Adjusting orientation...")
     info.Cmdsend.x_cmd = 0
     info.Cmdsend.y_cmd = 0
     info.Cmdsend.r_cmd = 0
     info.Cmdsend.kickpower_cmd = 0
     info.Cmdsend.shoot_flag = 0
-    info.Cmdsend.drib_flag = 0
+    info.Cmdsend.drib_flag = 1
     info.Cmdsend.state_flag = 0
 
     if (x_set != Pos.x):
@@ -64,35 +65,40 @@ def adjust_orientation(x_set, y_set):
     # print("theta", info.Cmdsend.angle_cmd)
     while(abs(info.Cmdsend.angle_cmd * 180 / math.pi - info.Datarev.angle_precise) > 1):
         pass
-    print("theta", info.Cmdsend.angle_cmd)
+    # print("theta", info.Cmdsend.angle_cmd)
 
 
 def go_to_position(x_set, y_set):
+    print("Going to position...")
     info.Cmdsend.state_flag = 1
 
     length = math.sqrt((x_set - Pos.x)*(x_set - Pos.x) + (y_set - Pos.y)*(y_set-Pos.y))
-    max_speed = 0.5
+    max_speed = 0.5 # m/s
     near_speed = 0.1
-    if (length <= 2.75):
-        stay_time = length / near_speed
-        info.Cmdsend.x_cmd = near_speed
-        time.sleep(stay_time)
-    else:
-        acc = 0.05
-        change_time = 0.5
-        up_length = ((acc + 0.5) * (0.5 / acc) * change_time) / 2
-        stay_time = (length - (2 * up_length)) / max_speed
 
-        while (info.Cmdsend.x_cmd < max_speed):
-            info.Cmdsend.x_cmd = info.Cmdsend.x_cmd + acc
-            time.sleep(0.5)
+    stay_time = length / near_speed
+    info.Cmdsend.x_cmd = near_speed * 100
+    time.sleep(stay_time)
+    # if (length <= 2.75):
+    #     stay_time = length / near_speed
+    #     info.Cmdsend.x_cmd = near_speed 
+    #     time.sleep(stay_time)
+    # else:
+    #     acc = 0.05
+    #     change_time = 0.5
+    #     up_length = ((acc + 0.5) * (0.5 / acc) * change_time) / 2
+    #     stay_time = (length - (2 * up_length)) / max_speed
 
-        info.Cmdsend.x_cmd = max_speed
-        time.sleep(stay_time)
+    #     while (info.Cmdsend.x_cmd < max_speed):
+    #         info.Cmdsend.x_cmd = info.Cmdsend.x_cmd + acc
+    #         time.sleep(0.5)
 
-        while (info.Cmdsend.x_cmd > 0):
-            info.Cmdsend.x_cmd = info.Cmdsend.x_cmd - acc
-            time.sleep(0.5)
+    #     info.Cmdsend.x_cmd = max_speed
+    #     time.sleep(stay_time)
+
+    #     while (info.Cmdsend.x_cmd > 0):
+    #         info.Cmdsend.x_cmd = info.Cmdsend.x_cmd - acc
+    #         time.sleep(0.5)
     
     info.Cmdsend.x_cmd = 0
 
